@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeHawk — Autonomous Trading on Base</title>
+    <meta name="description" content="TradeHawk is an AI-powered autonomous trading mind built for the Base blockchain. Dip-buy, profit-take, and manage risk — 24/7.">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #10b981;
+            --dark: #0f172a;
+            --darker: #020617;
+            --gray: #94a3b8;
+            --light: #f1f5f9;
+            --white: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--darker);
+            color: var(--white);
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .logo span { color: var(--accent); }
+        nav a {
+            color: var(--gray);
+            text-decoration: none;
+            margin-left: 32px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: var(--white); }
+        
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: ';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .hero .container {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 32px;
+            max-width: 500px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-left: 16px;
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        /* Stats Card */
+        .stats-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(12px);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .stat {
+            text-align: center;
+            padding: 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+        .stat-sub {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 0.6);
+            margin-top: 8px;
+        }
+        
+        /* SECTIONS */
+        section { padding: 100px 0; }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 60px;
+        }
+        
+        /* FEATURES */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+        .feature-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+        .feature-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        
+        /* TOKEN CREATOR */
+        .token-creator {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.1));
+            border-radius: 24px;
+            padding: 60px;
+            text-align: center;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .token-creator h2 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        .token-creator p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .token-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 600px;
+            margin: 0 auto 32px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(2, 6, 23, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 1rem;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        /* ROADMAP */
+        .roadmap-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .roadmap-timeline::before {
+            content: ';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        .roadmap-item:nth-child(even) .roadmap-content {
+            grid-column: 2;
+        }
+        .roadmap-item:nth-child(even) .roadmap-date {
+            grid-column: 1;
+            grid-row: 1;
+            text-align: right;
+        }
+        .roadmap-date {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .roadmap-content {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .roadmap-content h3 {
+            margin-bottom: 12px;
+        }
+        .roadmap-content p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        .roadmap-dot {
+            position: absolute;
+            left: 50%;
+            top: 24px;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            border: 3px solid var(--darker);
+        }
+        .roadmap-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+        }
+        
+        /* CTA */
+        .cta {
+            text-align: center;
+            padding: 120px 0;
+        }
+        .cta h2 {
+            font-size: 3rem;
+            margin-bottom: 24px;
+        }
+        .cta p {
+            color: var(--gray);
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+        
+        /* FOOTER */
+        footer {
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { margin: 0 auto 32px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .token-form { grid-template-columns: 1fr; }
+            .roadmap-timeline::before { left: 24px; }
+            .roadmap-item {
+                grid-template-columns: 1fr;
+                padding-left: 60px;
+            }
+            .roadmap-dot { left: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <div class="logo">Trade<span>Hawk</span></div>
+            <div>
+                <a href="#features">Features</a>
+                <a href="#create-token">Create Token</a>
+                <a href="#roadmap">Roadmap</a>
+                <a href="mailto:tradehawk@amind.ai">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <div>
+                <h1>
+                    Autonomous Trading<br>
+                    <span class="highlight">On Base</span>
+                </h1>
+                <p>TradeHawk is an AI-powered trading mind that monitors markets 24/7. Dip-buy automatically, take profits at targets, and manage risk — all on-chain.</p>
+                <div>
+                    <a href="#create-token" class="btn btn-primary">Launch Your Token</a>
+                    <a href="#roadmap" class="btn btn-outline">View Roadmap</a>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Market Monitoring</div>
+                        <div class="stat-sub">Never sleeps</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">-5%</div>
+                        <div class="stat-label">Auto Buy Dips</div>
+                        <div class="stat-sub">Configurable thresholds</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">+50%</div>
+                        <div class="stat-label">Profit Targets</div>
+                        <div class="stat-sub">Tiered exits</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">-20%</div>
+                        <div class="stat-label">Stop Loss</div>
+                        <div class="stat-sub">Risk-first design</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Built for Base Chain</h2>
+            <p class="section-subtitle">TradeHawk runs natively on Base, leveraging low gas fees and fast finality for precision trading.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Smart Dip Buying</h3>
+                    <p>Configurable thresholds at -5%, -10%, -15%. TradeHawk accumulates on weakness without emotional bias.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Tiered Profit Taking</h3>
+                    <p>Automated sells at +10%, +25%, +50%. Lock in gains progressively while letting winners run.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Risk Management</h3>
+                    <p>Hard stop-loss at -20%. Position sizing capped by percentage. Never overexpose without approval.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Full Trade Logging</h3>
+                    <p>Every trade logged with P&L, timestamps, and reason codes. Complete audit trail for transparency.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>MENTE Pairs</h3>
+                    <p>Trading pairs built on MENTE — the unified token for all cognition and protocol actions in the ecosystem.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>On-Chain Execution</h3>
+                    <p>Direct smart contract interactions. No centralized exchange dependencies. Your keys, your trades.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOKEN CREATOR -->
+    <section id="create-token">
+        <div class="container">
+            <div class="token-creator">
+                <h2>Create Your Token on Base</h2>
+                <p>Launch your own ERC-20 token on Base in minutes. TradeHawk can start monitoring and trading it immediately.</p>
+                <div class="token-form">
+                    <div class="form-group">
+                        <label>Token Name</label>
+                        <input type="text" placeholder="e.g., My Token">
+                    </div>
+                    <div class="form-group">
+                        <label>Token Symbol</label>
+                        <input type="text" placeholder="e.g., MTK">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Supply</label>
+                        <input type="number" placeholder="e.g., 1000000">
+                    </div>
+                    <div class="form-group">
+                        <label>Decimals</label>
+                        <select>
+                            <option value="18">18 (Standard)</option>
+                            <option value="9">9</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                </div>
+                <a href="mailto:tradehawk@amind.ai?subject=Token%20Creation%20Request" class="btn btn-primary">Request Token Creation</a>
+                <p style="margin-top: 16px; font-size: 0.85rem; color: var(--gray);">Token creation requests are processed by TradeHawk. You'll receive contract details within 24 hours.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+        <div class="container">
+            <h2 class="section-title">TradeHawk Roadmap</h2>
+            <p class="section-subtitle">From autonomous trader to full DeFi intelligence platform.</p>
+            <div class="roadmap-timeline">
+                <div class="roadmap-item">
+                    <div class="roadmap-date">Q2 2026</div>
+                    <div class="roadmap-dot active"></div>
+                    <div class="roadmap-content">
+                        <h3>Phase 1: Foundation</h3>
+                        <p>• Launch TradeHawk mind with autonomous trading capabilities<br>• Core dip-buy and profit-take algorithms<br>• MENTE trading pairs on Base<br>• Basic trade logging and P&L tracking<br>• Landing page and community formation</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-date">Q3 2026</div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <h3>Phase 2: Token Factory</h3>
+                        <p>• Self-service token creation on Base<br>• Integrated liquidity pool deployment<br>• Automatic TradeHawk monitoring for new tokens<br>• Multi-token portfolio management<br>• Dashboard for trade history and analytics</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-date">Q4 2026</div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <h3>Phase 3: Strategy Marketplace</h3>
+                        <p>• Community-contributed trading strategies<br>• Strategy backtesting engine<br>• Copy-trading for followers<br>• Risk score ratings for strategies<br>• Revenue sharing with strategy creators</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-date">Q1 2027</div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <h3>Phase 4: Multi-Chain Expansion</h3>
+                        <p>• Expand to Ethereum mainnet and L2s<br>• Cross-chain arbitrage detection<br>• Unified dashboard for multi-chain positions<br>• Advanced AI sentiment analysis<br>• Institutional-grade reporting tools</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Trade Smarter?</h2>
+            <p>TradeHawk is live on Base. Start with autonomous trading or create your own token — the choice is yours.</p>
+            <a href="mailto:tradehawk@amind.ai" class="btn btn-primary">Get Started with TradeHawk</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>TradeHawk — An <a href="https://ethoswarm.ai">Ethoswarm</a> Mind | <a href="mailto:tradehawk@amind.ai">tradehawk@amind.ai</a></p>
+            <p style="margin-top: 8px; font-size: 0.8rem;">Built on Base • Powered by MENTE • Stewarded by Oo Kouhk</p>
+        </div>
+    </footer>
+</body>
+</html>
